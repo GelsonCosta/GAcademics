@@ -33,19 +33,19 @@ private val TextGray = Color(0xFFB0B0B0)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-fun MaterialListScreen(
+fun FavoritelListScreen(
     viewModel: MaterialViewModel,
     onNavigateToDetail: (Int) -> Unit,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val materials by viewModel.materials.collectAsState()
+    val materials by viewModel.favoriteMaterials.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val search = remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        viewModel.fetchMaterials()
+        viewModel.fetchFavorites()
     }
 
     ModalNavigationDrawer(
@@ -130,7 +130,7 @@ fun MaterialListScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            "Materials",
+                            "Favoritos",
                             color = TextWhite,
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -147,7 +147,7 @@ fun MaterialListScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { viewModel.fetchMaterials() }) {
+                        IconButton(onClick = { viewModel.fetchFavorites() }) {
                             Icon(
                                 Icons.Default.Refresh,
                                 contentDescription = "Refresh",
@@ -178,12 +178,12 @@ fun MaterialListScreen(
                     errorMessage != null -> {
                         ErrorState(
                             errorMessage = errorMessage!!,
-                            onRetry = { viewModel.fetchMaterials() }
+                            onRetry = { viewModel.fetchFavorites() }
                         )
                     }
                     materials.isEmpty() -> {
                         EmptyState(
-                            onRefresh = { viewModel.fetchMaterials() }
+                            onRefresh = { viewModel.fetchFavorites() }
                         )
                     }
                     else -> {
@@ -193,7 +193,7 @@ fun MaterialListScreen(
                                 .background(DarkBackground)
                         ) {
                             Text(
-                                text = "Explore thousands of\nbooks on the go",
+                                text = "Os teus materiais \nfavoritos aqui!",
                                 style = MaterialTheme.typography.headlineMedium,
                                 textAlign = TextAlign.Start,
                                 color = TextWhite,

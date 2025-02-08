@@ -50,7 +50,7 @@ fun MaterialDetailsScreen(
             SmallTopAppBar(
                 title = {
                     Text(
-                        "Material Details",
+                        "Detalhes",
                         color = TextWhite
                     )
                 },
@@ -97,7 +97,7 @@ fun MaterialDetailsScreen(
             }
 
             material?.let { pdfMaterial ->
-                MaterialDetails(pdfMaterial)
+                MaterialDetails(pdfMaterial,viewModel)
             }
         }
     }
@@ -105,7 +105,7 @@ fun MaterialDetailsScreen(
 
 @Composable
 private fun MaterialDetails(
-    pdfMaterial: com.gelsoncosta.gacademics.data.models.PdfMaterial
+    pdfMaterial: com.gelsoncosta.gacademics.data.models.PdfMaterial,viewModel: MaterialViewModel
 ) {
     LazyColumn(
         modifier = Modifier
@@ -117,7 +117,7 @@ private fun MaterialDetails(
             PdfMaterialDetailsCard(
                 pdfMaterial = pdfMaterial,
                 onShareClick = { /* Implement share functionality */ },
-                onBookmarkClick = { /* Implement bookmark functionality */ },
+                materialViewModel = viewModel
             )
         }
 

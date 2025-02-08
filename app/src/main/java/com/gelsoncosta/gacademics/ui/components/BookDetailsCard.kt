@@ -23,6 +23,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.gelsoncosta.gacademics.SigleConstVariables.BASE_URL
 import com.gelsoncosta.gacademics.data.models.PdfMaterial
 import com.gelsoncosta.gacademics.navigation.AppNavigator
+import com.gelsoncosta.gacademics.ui.viewmodel.MaterialViewModel
 
 private val DarkBackground = Color(0xFF1A1A1A)
 private val DarkSurface = Color(0xFF2D2D2D)
@@ -33,10 +34,16 @@ private val TextGray = Color(0xFFB0B0B0)
 @Composable
 fun PdfMaterialDetailsCard(
     pdfMaterial: PdfMaterial,
-    onShareClick: () -> Unit = {},
-    onBookmarkClick: () -> Unit = {}
-
+    materialViewModel: MaterialViewModel,
+    onShareClick: () -> Unit = {}
 ) {
+    val favoriteMaterials by materialViewModel.favoriteMaterials.collectAsState()
+    val isFavorite = favoriteMaterials.any { it.id == pdfMaterial.id }
+
+    LaunchedEffect(Unit) {
+        materialViewModel.fetchFavorites()
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -52,7 +59,6 @@ fun PdfMaterialDetailsCard(
         )
     ) {
         Column {
-            // Cover Image with Overlay
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -66,16 +72,12 @@ fun PdfMaterialDetailsCard(
                     )
                 }
 
-                // Gradient Overlay
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(
-                            DarkBackground.copy(alpha = 0.5f)
-                        )
+                        .background(DarkBackground.copy(alpha = 0.5f))
                 )
 
-                // Action Buttons
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -85,46 +87,44 @@ fun PdfMaterialDetailsCard(
                 ) {
                     IconButton(
                         onClick = onShareClick,
-                        modifier = Modifier
-                            .background(
-                                DarkSurface.copy(alpha = 0.8f),
-                                RoundedCornerShape(12.dp)
-                            )
-                    ) {
-                        Icon(
-                            Icons.Default.Share,
-                            contentDescription = "Share",
-                            tint = TextWhite
+                        modifier = Modifier.background(
+                            DarkSurface.copy(alpha = 0.8f),
+                            RoundedCornerShape(12.dp)
                         )
+                    ) {
+                        Icon(Icons.Default.Share, contentDescription = "Share", tint = TextWhite)
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
 
                     IconButton(
-                        onClick = onBookmarkClick,
-                        modifier = Modifier
-                            .background(
-                                DarkSurface.copy(alpha = 0.8f),
-                                RoundedCornerShape(12.dp)
-                            )
+                        onClick = {
+                            if (isFavorite) {
+                                materialViewModel.removeFromFavorites(pdfMaterial.id)
+                            } else {
+                                materialViewModel.addToFavorites(pdfMaterial.id)
+                            }
+                        },
+                        modifier = Modifier.background(
+                            DarkSurface.copy(alpha = 0.8f),
+                            RoundedCornerShape(12.dp)
+                        )
                     ) {
                         Icon(
-                            Icons.Default.BookmarkBorder,
+                            imageVector = if (isFavorite) Icons.Filled.BookmarkBorder else Icons.Filled.BookmarkBorder,
                             contentDescription = "Bookmark",
-                            tint = TextWhite
+                            tint = if (isFavorite) AccentColor else TextWhite
                         )
                     }
                 }
             }
 
-            // Content Section
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Title with Material Design 3 Typography
                 Text(
                     text = pdfMaterial.title,
                     style = MaterialTheme.typography.headlineMedium,
@@ -133,9 +133,8 @@ fun PdfMaterialDetailsCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                // Description with improved readability
                 Text(
-                    text = pdfMaterial.description,
+                    text = "${pdfMaterial.description.take(150)}...",
                     style = MaterialTheme.typography.bodyLarge,
                     color = TextGray,
                     lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2
@@ -146,10 +145,8 @@ fun PdfMaterialDetailsCard(
                     color = TextWhite.copy(alpha = 0.1f)
                 )
 
-                // Tags with improved visual hierarchy
                 PdfMaterialTagChips(pdfMaterial.tags)
 
-                // Read Button
                 Button(
                     onClick = { AppNavigator.navigateToPdfReader(pdfMaterial.id) },
                     modifier = Modifier
@@ -160,21 +157,15 @@ fun PdfMaterialDetailsCard(
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Icon(
-                        Icons.Default.MenuBook,
-                        contentDescription = "Read Icon",
-                        modifier = Modifier.size(24.dp)
-                    )
+                    Icon(Icons.Default.MenuBook, contentDescription = "Read Icon", modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Ler",
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                    Text(text = "Ler", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

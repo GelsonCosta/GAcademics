@@ -9,15 +9,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import retrofit2.Response
 
 class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
 
     private val _materials = MutableStateFlow<List<PdfMaterial>>(emptyList())
     val materials: StateFlow<List<PdfMaterial>> = _materials
 
+    private val _Mymaterials = MutableStateFlow<List<PdfMaterial>>(emptyList())
+    val Mymaterials: StateFlow<List<PdfMaterial>> = _materials
+
     private val _selectedMaterial = MutableStateFlow<PdfMaterial?>(null)
     val selectedMaterial: StateFlow<PdfMaterial?> = _selectedMaterial
+
+    private val _favoriteMaterials = MutableStateFlow<List<PdfMaterial>>(emptyList())
+    val favoriteMaterials: StateFlow<List<PdfMaterial>> = _favoriteMaterials
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -42,13 +47,14 @@ class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
             }
         }
     }
+
     fun fetchMyMaterials() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 val response = apiService.getMyMaterials()
                 if (response.isSuccessful) {
-                    _materials.value = response.body() ?: emptyList()
+                    _Mymaterials.value = response.body() ?: emptyList()
                 } else {
                     _errorMessage.value = "Erro ao carregar materiais"
                 }
@@ -102,6 +108,7 @@ class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
             }
         }
     }
+
     fun updateMaterial(
         id: Int,
         title: RequestBody,
@@ -114,11 +121,11 @@ class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = apiService.updateMaterial(id,title, description, coverImage, pdfFile, tags, category)
+                val response = apiService.updateMaterial(id, title, description, coverImage, pdfFile, tags, category)
                 if (response.isSuccessful) {
                     fetchMyMaterials()
                 } else {
-                    _errorMessage.value = "Erro ao enviar material"
+                    _errorMessage.value = "Erro ao atualizar material"
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Erro: ${e.message}"
@@ -146,4 +153,61 @@ class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
         }
     }
 
+    // ⭐ FAVORITES FUNCTIONS ⭐
+
+    fun fetchFavorites() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = apiService.getFavorites()
+                if (response.isSuccessful) {
+                    _favoriteMaterials.value = response.body() ?: emptyList()
+                } else {
+                    _errorMessage.value = "Erro ao carregar favoritos"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Erro: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun addToFavorites(materialId: Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = apiService.addToFavorites(mapOf("material_id" to materialId))
+                if (response.isSuccessful) {
+                    fetchFavorites() // Atualiza a lista de favoritos após a adição
+                    fetchMaterials()
+                } else {
+                    _errorMessage.value = "Erro ao adicionar aos favoritos"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Erro: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun removeFromFavorites(materialId: Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = apiService.removeFromFavorites(materialId)
+                if (response.isSuccessful) {
+                    _favoriteMaterials.value = _favoriteMaterials.value.filterNot { it.id == materialId }
+                    fetchMaterials()
+                } else {
+                    _errorMessage.value = "Erro ao remover dos favoritos"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Erro: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 }

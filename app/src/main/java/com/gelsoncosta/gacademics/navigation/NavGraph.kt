@@ -16,7 +16,6 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
     object Home : Screen("home")
-    object MaterialList : Screen("materials")
     object MyMaterialList: Screen("mymaterials")
     object UploadMaterialScreen: Screen("uploadMaterial")
     object UpdateMaterialScreen: Screen("updateMaterial/{materialId}"){
@@ -28,6 +27,7 @@ sealed class Screen(val route: String) {
     object pdfReader : Screen("pdfReader/{id}") {
         fun createRoute(id:Int) = "pdfReader/$id"
     }
+    object FavoriteList : Screen("favorites")
 }
 
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -135,7 +135,7 @@ fun NavGraph(
         composable(Screen.Home.route) {
             HomeScreen(
                 onNavigateToMaterialList = {
-                    navController.navigate(Screen.MaterialList.route)
+                    navController.navigate(Screen.Home.route)
                 },
                 onLogout = {
                     userViewModel.logout()
@@ -146,8 +146,16 @@ fun NavGraph(
             )
         }
 
-        composable(Screen.MaterialList.route) {
+        composable(Screen.Home.route) {
             MaterialListScreen(
+                viewModel = materialViewModel,
+                onNavigateToDetail = { materialId ->
+                    navController.navigate(Screen.MaterialDetail.createRoute(materialId))
+                }
+            )
+        }
+        composable(Screen.FavoriteList.route) {
+            FavoritelListScreen (
                 viewModel = materialViewModel,
                 onNavigateToDetail = { materialId ->
                     navController.navigate(Screen.MaterialDetail.createRoute(materialId))
@@ -174,7 +182,10 @@ fun NavGraph(
             val materialId = backStackEntry.arguments?.getInt("materialId") ?: return@composable
             MaterialDetailsScreen(
                 viewModel = materialViewModel,
-                materialId = materialId
+                materialId = materialId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
             )
         }
 
@@ -200,7 +211,7 @@ object AppNavigator {
        navController?.navigate(Screen.MyMaterialList.route)
     }
     fun navigateToFavorites(){
-        //navController?.navigate(Screen.Favorites.route)
+        navController?.navigate(Screen.FavoriteList.route)
     }
     fun navigateToDownloads(){
         //navController?.navigate(Screen.Downloads.route)

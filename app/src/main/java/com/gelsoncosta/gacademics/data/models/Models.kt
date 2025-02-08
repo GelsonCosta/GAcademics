@@ -13,13 +13,14 @@ data class AuthResponse(
 
 data class PdfMaterial(
     val id: Int,
-    val title: String,
-    val description: String,
-    val cover: String?,
-    val file_path: String,
-    val tags: String,
-    val category: String,
-    val creator_name: String
+    val title: String = "",
+    val description: String ="",
+    val cover: String? ="",
+    val file_path: String ="",
+    val tags: String ="",
+    val category: String="",
+    val creator_name: String="",
+    val favorite_id:Int?=0
 )
 
 

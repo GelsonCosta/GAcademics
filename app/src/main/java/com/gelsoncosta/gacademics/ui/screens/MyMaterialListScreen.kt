@@ -38,7 +38,7 @@ fun MyMaterialListScreen(
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val materials by viewModel.materials.collectAsState()
+    val materials by viewModel.Mymaterials.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val search = remember { mutableStateOf("") }
@@ -134,7 +134,7 @@ fun MyMaterialListScreen(
                     Icon(Icons.Default.Add, contentDescription = "Add Material")
                 }
             },
-                    topBar = {
+            topBar = {
                 TopAppBar(
                     title = {
                         Text(
@@ -234,7 +234,7 @@ fun MyMaterialListScreen(
                                 modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp)
                             )
 
-                            MaterialList(
+                            MaterialListPersonal (
                                 materials = materials.filter {
                                     (it.title ?: "").contains(search.value, ignoreCase = true)
                                 },
@@ -249,7 +249,7 @@ fun MyMaterialListScreen(
 }
 
 @Composable
-private fun MaterialList(
+private fun MaterialListPersonal(
     materials: List<com.gelsoncosta.gacademics.data.models.PdfMaterial>,
     onNavigateToDetail: (Int) -> Unit
 ) {
@@ -261,11 +261,16 @@ private fun MaterialList(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(materials.reversed()) { material ->
+        items(
+            items = materials.reversed(),
+            key = { it.id }
+        ) { material ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { AppNavigator.navigateToUpdateMaterial(material.id) },
+                    .clickable {
+                        AppNavigator.navigateToUpdateMaterial(material.id)
+                    },
                 colors = CardDefaults.cardColors(
                     containerColor = DarkSurface
                 ),
@@ -278,16 +283,24 @@ private fun MaterialList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    material.cover?.let { coverUrl ->
-                        GlideImage(
-                            imageUrl = coverUrl,
-                            contentDescription = material.title ?: "",
-                            modifier = Modifier
-                                .size(80.dp)
-                                .clip(MaterialTheme.shapes.small)
-                        )
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(DarkBackground)
+                    ) {
+                        material.cover?.let { coverUrl ->
+                            if (coverUrl.isNotBlank()) {
+                                GlideImage(
+                                    imageUrl = coverUrl,
+                                    contentDescription = material.title.ifEmpty { "Material image" },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
                     }
 
                     Column(
@@ -295,34 +308,39 @@ private fun MaterialList(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = material.title ?: "",
+                            text = material.title.ifEmpty { "Sem título" },
                             style = MaterialTheme.typography.titleMedium,
                             color = TextWhite,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
 
-                        Text(
-                            text = material.description ?: "",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = TextGray,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        if (material.description.isNotEmpty()) {
+                            Text(
+                                text = material.description,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextGray,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
 
-                        Text(
-                            text = material.category ?: "",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = AccentColor,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        if (material.category.isNotEmpty()) {
+                            Text(
+                                text = material.category,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = AccentColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 private fun ErrorState(
