@@ -1,5 +1,7 @@
 package com.gelsoncosta.gacademics.data.models
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 data class User(
@@ -13,13 +15,13 @@ data class AuthResponse(
     val token: String,
     val user: User
 )
-
+@Entity(tableName = "materials")
 data class PdfMaterial(
-    val id: Int,
+    @PrimaryKey(autoGenerate = false) val id: Int,
     val title: String = "",
     val description: String ="",
-    val cover: String? ="",
-    val file_path: String ="",
+    var cover: String? ="",
+    var file_path: String ="",
     val tags: String ="",
     val category: String="",
     val creator_name: String="",

@@ -3,6 +3,7 @@ package com.gelsoncosta.gacademics.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gelsoncosta.gacademics.data.api.ApiService
+import com.gelsoncosta.gacademics.data.local.dao.PdfMaterialDao
 import com.gelsoncosta.gacademics.data.models.PdfMaterial
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,10 +11,13 @@ import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
-class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
+class MaterialViewModel(private val apiService: ApiService, private val pdfMaterialDao: PdfMaterialDao) : ViewModel() {
 
     private val _materials = MutableStateFlow<List<PdfMaterial>>(emptyList())
     val materials: StateFlow<List<PdfMaterial>> = _materials
+
+    private val _Offlinematerials = MutableStateFlow<List<PdfMaterial>>(emptyList())
+    val Offlinematerials: StateFlow<List<PdfMaterial>> = _Offlinematerials
 
     private val _Mymaterials = MutableStateFlow<List<PdfMaterial>>(emptyList())
     val Mymaterials: StateFlow<List<PdfMaterial>> = _Mymaterials
@@ -37,6 +41,7 @@ class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
                 val response = apiService.getMaterials()
                 if (response.isSuccessful) {
                     _materials.value = response.body() ?: emptyList()
+                    _errorMessage.value = null
                 } else {
                     _errorMessage.value = "Erro ao carregar materiais"
                 }
@@ -55,6 +60,7 @@ class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
                 val response = apiService.getMyMaterials()
                 if (response.isSuccessful) {
                     _Mymaterials.value = response.body() ?: emptyList()
+                    _errorMessage.value = null
                 } else {
                     _errorMessage.value = "Erro ao carregar materiais"
                 }
@@ -162,6 +168,7 @@ class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
                 val response = apiService.getFavorites()
                 if (response.isSuccessful) {
                     _favoriteMaterials.value = response.body() ?: emptyList()
+                    _errorMessage.value = null
                 } else {
                     _errorMessage.value = "Erro ao carregar favoritos"
                 }
@@ -210,4 +217,30 @@ class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
             }
         }
     }
+
+    // Pdfs Offlines
+    fun insertPdfMaterial(pdfMaterial: PdfMaterial) {
+        viewModelScope.launch {
+            pdfMaterialDao.insertPdfMaterial(pdfMaterial)
+            getOfflineMaterials()
+        }
+    }
+    suspend fun getOfflineMaterialById(id: Int): PdfMaterial? {
+        _selectedMaterial.value = pdfMaterialDao.getPdfMaterialById(id)
+        return _selectedMaterial.value
+    }
+
+    fun removePdfMaterial(pdfMaterial: PdfMaterial) {
+        viewModelScope.launch {
+            pdfMaterialDao.deletePdfMaterial(pdfMaterial)
+            getOfflineMaterials()
+        }
+    }
+
+    fun getOfflineMaterials() {
+        viewModelScope.launch {
+            _Offlinematerials.value = pdfMaterialDao.getAllPdfMaterials()
+        }
+    }
+
 }

@@ -1,6 +1,8 @@
 package com.gelsoncosta.gacademics.ui.screens
 
 
+
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -32,19 +34,19 @@ private val TextGray = Color(0xFFB0B0B0)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-fun MyMaterialListScreen(
+fun OfflineMaterialListScreen(
     viewModel: MaterialViewModel,
     onNavigateToDetail: (Int) -> Unit,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val materials by viewModel.Mymaterials.collectAsState()
+    val materials by viewModel.Offlinematerials.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val search = remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        viewModel.fetchMyMaterials()
+        viewModel.getOfflineMaterials()
     }
 
     ModalNavigationDrawer(
@@ -125,20 +127,11 @@ fun MyMaterialListScreen(
         Scaffold(
             modifier = Modifier.background(DarkBackground),
             containerColor = DarkBackground,
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { AppNavigator.navigateToAddMaterial() },
-                    containerColor = AccentColor,
-                    contentColor = TextWhite
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Material")
-                }
-            },
             topBar = {
                 TopAppBar(
                     title = {
                         Text(
-                            "Meus Materiais",
+                            "Downloads",
                             color = TextWhite,
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -155,7 +148,7 @@ fun MyMaterialListScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { viewModel.fetchMyMaterials() }) {
+                        IconButton(onClick = { viewModel.getOfflineMaterials() }) {
                             Icon(
                                 Icons.Default.Refresh,
                                 contentDescription = "Refresh",
@@ -183,15 +176,10 @@ fun MyMaterialListScreen(
                             color = AccentColor
                         )
                     }
-                    errorMessage != null -> {
-                        ErrorState(
-                            errorMessage = errorMessage!!,
-                            onRetry = { viewModel.fetchMyMaterials() }
-                        )
-                    }
+
                     materials.isEmpty() -> {
                         EmptyState(
-                            onRefresh = { viewModel.fetchMyMaterials() }
+                            onRefresh = { viewModel.getOfflineMaterials() }
                         )
                     }
                     else -> {
@@ -238,6 +226,7 @@ fun MyMaterialListScreen(
                                 materials = materials.filter {
                                     (it.title ?: "").contains(search.value, ignoreCase = true)
                                 },
+                                viewModel = viewModel,
                                 onNavigateToDetail = onNavigateToDetail
                             )
                         }
@@ -251,10 +240,11 @@ fun MyMaterialListScreen(
 @Composable
 private fun MaterialListPersonal(
     materials: List<com.gelsoncosta.gacademics.data.models.PdfMaterial>,
+    viewModel: MaterialViewModel,
     onNavigateToDetail: (Int) -> Unit
 ) {
     val listState = rememberLazyListState()
-
+    val coroutineScope = rememberCoroutineScope()
     LazyColumn(
         state = listState,
         contentPadding = PaddingValues(16.dp),
@@ -269,7 +259,7 @@ private fun MaterialListPersonal(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        AppNavigator.navigateToUpdateMaterial(material.id)
+                        AppNavigator.navigateToOfflinePdfReader(material.id)
                     },
                 colors = CardDefaults.cardColors(
                     containerColor = DarkSurface
@@ -297,6 +287,7 @@ private fun MaterialListPersonal(
                                 GlideImage(
                                     imageUrl = coverUrl,
                                     contentDescription = material.title.ifEmpty { "Material image" },
+                                    isOffline = true,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }
@@ -315,14 +306,29 @@ private fun MaterialListPersonal(
                             overflow = TextOverflow.Ellipsis
                         )
 
-                        if (material.description.isNotEmpty()) {
-                            Text(
-                                text = material.description,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextGray,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                        Row {
+                            if (material.description.isNotEmpty()) {
+                                Text(
+                                    text = material.description,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextGray,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            IconButton(onClick = {
+                                coroutineScope.launch{
+                                    viewModel.removePdfMaterial(material)
+                                }
+                            }) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Menu",
+                                    tint = Color.Red
+                                )
+                            }
                         }
 
                         if (material.category.isNotEmpty()) {
@@ -342,47 +348,7 @@ private fun MaterialListPersonal(
 }
 
 
-@Composable
-private fun ErrorState(
-    errorMessage: String,
-    onRetry: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.Error,
-            contentDescription = null,
-            tint = Color(0xFFFF6B6B),
-            modifier = Modifier.size(48.dp)
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = errorMessage,
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color(0xFFFF6B6B),
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = AccentColor,
-                contentColor = TextWhite
-            )
-        ) {
-            Text("Retry")
-        }
-    }
-}
 
 @Composable
 private fun EmptyState(

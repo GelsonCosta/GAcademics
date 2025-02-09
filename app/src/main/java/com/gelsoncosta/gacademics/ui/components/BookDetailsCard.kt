@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkBorder
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,12 +17,28 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.ImageView
+import androidx.compose.material.icons.filled.DownloadDone
+import androidx.compose.material.icons.filled.DownloadForOffline
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.gelsoncosta.gacademics.SigleConstVariables.BASE_URL
 import com.gelsoncosta.gacademics.data.models.PdfMaterial
 import com.gelsoncosta.gacademics.navigation.AppNavigator
 import com.gelsoncosta.gacademics.ui.viewmodel.MaterialViewModel
+import android.content.Context
+import android.graphics.drawable.Drawable
+import android.os.Environment
+import android.util.Log
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.gelsoncosta.gacademics.utils.downloadAndSaveFile
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import javax.sql.DataSource
 
 private val DarkBackground = Color(0xFF1A1A1A)
 private val DarkSurface = Color(0xFF2D2D2D)
@@ -35,14 +50,17 @@ private val TextGray = Color(0xFFB0B0B0)
 fun PdfMaterialDetailsCard(
     pdfMaterial: PdfMaterial,
     materialViewModel: MaterialViewModel,
-    onShareClick: () -> Unit = {}
 ) {
     val favoriteMaterials by materialViewModel.favoriteMaterials.collectAsState()
     val isFavorite = favoriteMaterials.any { it.id == pdfMaterial.id }
-
+    val offlineMaterials by materialViewModel.Offlinematerials.collectAsState()
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         materialViewModel.fetchFavorites()
+        materialViewModel.getOfflineMaterials()
     }
+    val isOfflineMaterial = offlineMaterials.any { it.id == pdfMaterial.id }
 
     Card(
         modifier = Modifier
@@ -86,13 +104,39 @@ fun PdfMaterialDetailsCard(
                     horizontalArrangement = Arrangement.End
                 ) {
                     IconButton(
-                        onClick = onShareClick,
+                        onClick = {
+                            if(isOfflineMaterial){
+                                coroutineScope.launch{
+                                    materialViewModel.removePdfMaterial(pdfMaterial)
+                                    AppNavigator.navigateToDetail(pdfMaterial.id)
+                                }
+                            }else{
+                                coroutineScope.launch{
+                                val savedPdf = downloadAndSaveFile(context, "${BASE_URL}${pdfMaterial.file_path}")
+                                val savedCover = downloadAndSaveFile(context, "${BASE_URL}${pdfMaterial.cover}")
+                                var pdf = ""
+                                var img =""
+                                savedPdf?.let {
+                                    pdf = it
+                                }
+                                savedCover?.let{
+                                    img = it
+                                }
+                            var newPdfMaterial = PdfMaterial(pdfMaterial.id, pdfMaterial.title, pdfMaterial.description,img,pdf,pdfMaterial.tags,pdfMaterial.category)
+
+                                materialViewModel.insertPdfMaterial(newPdfMaterial)
+                                AppNavigator.navigateToDetail(pdfMaterial.id)
+                            }
+
+
+                            }
+                        },
                         modifier = Modifier.background(
                             DarkSurface.copy(alpha = 0.8f),
                             RoundedCornerShape(12.dp)
                         )
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = "Share", tint = TextWhite)
+                        Icon(if(isOfflineMaterial) Icons.Default.DownloadDone else Icons.Default.DownloadForOffline, contentDescription = "Download", tint = TextWhite)
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -201,6 +245,9 @@ fun PdfMaterialTagChips(tags: String) {
     }
 }
 
+
+
+
 @Composable
 fun GlideImage(
     imageUrl: String,
@@ -209,24 +256,67 @@ fun GlideImage(
     isOffline: Boolean = false
 ) {
     val context = LocalContext.current
-    val finalUrl = if (isOffline) "" else "$BASE_URL$imageUrl"
+
     AndroidView(
         factory = { ctx ->
             ImageView(ctx).apply {
-                layoutParams = android.view.ViewGroup.LayoutParams(
-                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
-                )
                 scaleType = ImageView.ScaleType.CENTER_CROP
             }
         },
         modifier = modifier,
         update = { imageView ->
+            val imageSource = if (isOffline) {
+                File(imageUrl)
+            } else {
+                "$BASE_URL$imageUrl"
+            }
+
             Glide.with(context)
-                .load(finalUrl)
-                .transition(DrawableTransitionOptions.withCrossFade(300))
+                .load(imageSource)
                 .centerCrop()
                 .into(imageView)
         }
     )
+}
+
+
+
+fun downloadFile(context: Context, fileUrl: String, title: String): String? {
+    var connection: HttpURLConnection? = null
+    var inputStream: InputStream? = null
+    var outputStream: FileOutputStream? = null
+
+    try {
+        // Criar diretório se não existir
+        val storageDir = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "GAcademics")
+        if (!storageDir.exists()) {
+            storageDir.mkdirs()
+        }
+
+        // Definir nome do arquivo
+        val extension = fileUrl.substringAfterLast(".", "pdf")
+        val fileName = "$title.$extension"
+        val file = File(storageDir, fileName)
+
+        // Configurar e abrir conexão
+        connection = URL(fileUrl).openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.connect()
+
+        // Baixar e salvar o arquivo
+        inputStream = connection.inputStream
+        outputStream = FileOutputStream(file)
+        inputStream.copyTo(outputStream)
+
+        return file.absolutePath
+
+    } catch (e: Exception) {
+        Log.e("Download", "Erro ao baixar arquivo: ${e.message}")
+        e.printStackTrace()
+        return null
+    } finally {
+        outputStream?.close()
+        inputStream?.close()
+        connection?.disconnect()
+    }
 }

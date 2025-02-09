@@ -25,6 +25,15 @@ import com.gelsoncosta.gacademics.ui.components.PdfMaterialDetailsCard
 import com.gelsoncosta.gacademics.ui.viewmodel.CommentViewModel
 import com.gelsoncosta.gacademics.ui.viewmodel.MaterialViewModel
 import com.gelsoncosta.gacademics.ui.viewmodel.UserViewModel
+import android.content.Context
+import android.os.Environment
+import android.util.Log
+import androidx.compose.ui.platform.LocalContext
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
 private val DarkBackground = Color(0xFF1A1A1A)
 private val DarkSurface = Color(0xFF2D2D2D)
@@ -131,7 +140,6 @@ private fun MaterialDetails(
 
             PdfMaterialDetailsCard(
                 pdfMaterial = pdfMaterial,
-                onShareClick = { /* Implement share functionality */ },
                 materialViewModel = viewModel
             )
         CommentSection(
@@ -148,4 +156,42 @@ private fun MaterialDetails(
 
 
     }
+
+
+fun downloadFile(context: Context, fileUrl: String, fileName: String): String? {
+    try {
+        val url = URL(fileUrl)
+        val connection = url.openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.connect()
+
+        if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+            Log.e("Download", "Erro ao baixar o arquivo: ${connection.responseMessage}")
+            return null
+        }
+
+        val inputStream: InputStream = connection.inputStream
+        val storageDir = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "GAcademics")
+
+        if (!storageDir.exists()) {
+            storageDir.mkdirs()
+        }
+
+        val file = File(storageDir, fileName)
+        val outputStream = FileOutputStream(file)
+
+        inputStream.copyTo(outputStream)
+
+        outputStream.close()
+        inputStream.close()
+        connection.disconnect()
+
+        Log.d("Download", "Arquivo salvo em: ${file.absolutePath}")
+        return file.absolutePath
+    } catch (e: Exception) {
+        Log.e("Download", "Erro: ${e.localizedMessage}")
+        return null
+    }
+}
+
 

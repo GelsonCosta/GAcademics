@@ -37,6 +37,8 @@ interface ApiService {
 
     @GET("my-materials")
     suspend fun getMyMaterials(): Response<List<PdfMaterial>>
+    @GET("ping")
+    suspend fun ping(): Response<Any>
 
     @GET("materials/{id}")
     suspend fun getMaterial(@Path("id") id: Int): Response<PdfMaterial>

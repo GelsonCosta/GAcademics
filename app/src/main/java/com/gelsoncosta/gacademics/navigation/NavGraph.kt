@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.asLiveData
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -19,6 +20,7 @@ sealed class Screen(val route: String) {
     object Register : Screen("register")
     object Home : Screen("home")
     object MyMaterialList: Screen("mymaterials")
+    object  Downloads: Screen("downloads")
     object UploadMaterialScreen: Screen("uploadMaterial")
     object UpdateMaterialScreen: Screen("updateMaterial/{materialId}"){
         fun createRoute(materialId: Int) = "updateMaterial/$materialId"
@@ -28,6 +30,9 @@ sealed class Screen(val route: String) {
     }
     object pdfReader : Screen("pdfReader/{id}") {
         fun createRoute(id:Int) = "pdfReader/$id"
+    }
+    object OfflinepdfReader : Screen("offlinePdfReader/{id}") {
+        fun createRoute(id:Int) = "offlinePdfReader/$id"
     }
     object FavoriteList : Screen("favorites")
 }
@@ -59,7 +64,9 @@ fun NavGraph(
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 },
-                isLoggedIn = userViewModel.authToken.value != null
+                isLoggedIn = userViewModel.authToken.value != null,
+                userViewModel = userViewModel,
+                isOffiline = userViewModel.isOffiline.value
             )
         }
         composable(Screen.UploadMaterialScreen.route) {
@@ -103,6 +110,21 @@ fun NavGraph(
             backStackEntry ->
             val id = backStackEntry.arguments?.getInt("id") ?: return@composable
             PdfReaderScreen(viewModel = materialViewModel, id = id,onNavigateBack = {
+                navController.popBackStack()
+            })
+        }
+
+        composable(
+            route = Screen.OfflinepdfReader.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                }
+            )
+        ){
+                backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id") ?: return@composable
+            LocalPdfReaderScreen(viewModel = materialViewModel, id = id,onNavigateBack = {
                 navController.popBackStack()
             })
         }
@@ -174,6 +196,14 @@ fun NavGraph(
                 }
             )
         }
+        composable(Screen.Downloads.route) {
+            OfflineMaterialListScreen(
+                viewModel = materialViewModel,
+                onNavigateToDetail = { materialId ->
+                    // navController.navigate(Screen.MaterialDetail.createRoute(materialId))
+                }
+            )
+        }
 
         composable(
             route = Screen.MaterialDetail.route,
@@ -220,7 +250,7 @@ object AppNavigator {
         navController?.navigate(Screen.FavoriteList.route)
     }
     fun navigateToDownloads(){
-        //navController?.navigate(Screen.Downloads.route)
+        navController?.navigate(Screen.Downloads.route)
     }
     fun  navigateToAddMaterial(){
        navController?.navigate(Screen.UploadMaterialScreen.route)
@@ -230,6 +260,13 @@ object AppNavigator {
     }
     fun navigateToPdfReader(id:Int){
         navController?.navigate(Screen.pdfReader.createRoute(id))
+    }
+
+    fun navigateToDetail(materialId: Int) {
+        navController?.navigate(Screen.MaterialDetail.createRoute(materialId),{launchSingleTop = true})
+    }
+    fun navigateToOfflinePdfReader(id:Int){
+        navController?.navigate(Screen.OfflinepdfReader.createRoute(id))
     }
 
 

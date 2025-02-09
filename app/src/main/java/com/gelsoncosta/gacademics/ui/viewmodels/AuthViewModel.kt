@@ -6,10 +6,13 @@ import com.gelsoncosta.gacademics.data.api.ApiService
 import com.gelsoncosta.gacademics.data.api.TokenManager
 import com.gelsoncosta.gacademics.data.models.AuthResponse
 import com.gelsoncosta.gacademics.data.models.User
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Response
+import java.net.ConnectException
+import java.net.UnknownHostException
 
 class UserViewModel(
     private val apiService: ApiService,
@@ -22,6 +25,9 @@ class UserViewModel(
     private val _authToken = MutableStateFlow<String?>(null)
     val authToken: StateFlow<String?> = _authToken
 
+    private val _isOffiline = MutableStateFlow<Boolean?>(null)
+    val isOffiline: StateFlow<Boolean?> = _isOffiline
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -30,24 +36,46 @@ class UserViewModel(
 
     init {
         checkSession()
+        startConnectionMonitoring()
+    }
+
+    private fun startConnectionMonitoring() {
+        viewModelScope.launch {
+            while (true) {
+                checkConnection()
+                delay(30000) // Check connection every 30 seconds
+            }
+        }
+    }
+
+    private suspend fun checkConnection() {
+        try {
+            // Try to make a lightweight API call to check connection
+            val response = apiService.ping() // You'll need to add this endpoint to your API
+            _isOffiline.value = !response.isSuccessful
+        } catch (e: Exception) {
+
+
+                    _isOffiline.value = true
+
+
+
+        }
     }
 
     private fun checkSession() {
         viewModelScope.launch {
             try {
-                val token = dataStoreHelper.getToken() ?: null
-                val user = dataStoreHelper.getUser() ?: null
+                val token = dataStoreHelper.getToken()
+                val user = dataStoreHelper.getUser()
                 if (token != null) {
                     _authToken.value = token
                     _user.value = user
+                    checkConnection() // Check connection when session is checked
                 }
-            }catch (e : Exception)
-            {
+            } catch (e: Exception) {
                 _errorMessage.value = "Erro: ${e.message}"
             }
-
-
-
         }
     }
 
@@ -77,6 +105,7 @@ class UserViewModel(
                 handleAuthResponse(response)
                 if(response.isSuccessful){
                     onSuccess()
+                    _isOffiline.value = false
                 }else{
                     onError( response.errorBody()?.string() ?: response.message())
                 }
@@ -96,6 +125,7 @@ class UserViewModel(
                 handleAuthResponse(response)
                 if(response.isSuccessful){
                     onSuccess()
+                    _isOffiline.value = false
                 }else{
                     onError( response.errorBody()?.string() ?: response.message())
                 }

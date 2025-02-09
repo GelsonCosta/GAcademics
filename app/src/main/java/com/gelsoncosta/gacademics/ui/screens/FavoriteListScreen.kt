@@ -76,7 +76,7 @@ fun FavoritelListScreen(
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Book, null) },
-                    label = { Text("My Books") },
+                    label = { Text("Meus Livros") },
                     selected = false,
                     onClick = { AppNavigator.navigateToMyMaterials() },
                     colors = NavigationDrawerItemDefaults.colors(
@@ -87,7 +87,7 @@ fun FavoritelListScreen(
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Favorite, null) },
-                    label = { Text("Favorites") },
+                    label = { Text("Favoritos") },
                     selected = false,
                     onClick = { AppNavigator.navigateToFavorites() },
                     colors = NavigationDrawerItemDefaults.colors(
@@ -110,7 +110,7 @@ fun FavoritelListScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Logout, null) },
-                    label = { Text("Sign Out") },
+                    label = { Text("Terminar Sessão") },
                     selected = false,
                     onClick = {AppNavigator.onSignOut()},
                     colors = NavigationDrawerItemDefaults.colors(
