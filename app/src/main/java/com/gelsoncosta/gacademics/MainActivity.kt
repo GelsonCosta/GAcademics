@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val sharedPreferences = getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("auth_prefs", MODE_PRIVATE)
         val tokenManager = TokenManager(sharedPreferences)
         RetrofitInstance.initialize(tokenManager)
         //val datastore = DataStoreHelper(applicationContext)

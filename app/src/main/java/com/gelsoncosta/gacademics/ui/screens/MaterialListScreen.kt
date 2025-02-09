@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.gelsoncosta.gacademics.navigation.AppNavigator
 import com.gelsoncosta.gacademics.ui.components.GlideImage
+import com.gelsoncosta.gacademics.ui.viewmodel.UserViewModel
 
 import com.gelsoncosta.gacademics.ui.viewmodel.MaterialViewModel
 import kotlinx.coroutines.launch
@@ -35,6 +36,7 @@ private val TextGray = Color(0xFFB0B0B0)
 @Composable
 fun MaterialListScreen(
     viewModel: MaterialViewModel,
+    userViewModel: UserViewModel,
     onNavigateToDetail: (Int) -> Unit,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -43,7 +45,7 @@ fun MaterialListScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val search = remember { mutableStateOf("") }
-
+    val user by userViewModel.user.collectAsState()
     LaunchedEffect(Unit) {
         viewModel.fetchMaterials()
     }
@@ -130,7 +132,7 @@ fun MaterialListScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            "Materials",
+                            user?.name ?: "G-Academics",
                             color = TextWhite,
                             style = MaterialTheme.typography.titleLarge
                         )

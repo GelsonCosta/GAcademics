@@ -2,6 +2,7 @@ package com.gelsoncosta.gacademics.data.api
 
 import com.gelsoncosta.gacademics.data.models.AuthResponse
 import com.gelsoncosta.gacademics.data.models.Comment
+import com.gelsoncosta.gacademics.data.models.CommentRequest
 import com.gelsoncosta.gacademics.data.models.PdfMaterial
 import com.gelsoncosta.gacademics.data.models.User
 import okhttp3.MultipartBody
@@ -66,17 +67,6 @@ interface ApiService {
     @DELETE("materials/{id}")
     suspend fun deleteMaterial(@Path("id") id: Int): Response<Unit>
 
-    @GET("materials/{id}/comments")
-    suspend fun getComments(@Path("id") materialId: Int): Response<List<Comment>>
-
-    @POST("materials/{id}/comments")
-    suspend fun addComment(
-        @Path("id") materialId: Int,
-        @Body comment: Map<String, String>
-    ): Response<Comment>
-
-    @DELETE("comments/{id}")
-    suspend fun deleteComment(@Path("id") commentId: Int): Response<Unit>
 
     // Favoritos
     @POST("favorites")
@@ -87,4 +77,20 @@ interface ApiService {
 
     @GET("favorites")
     suspend fun getFavorites(): Response<List<PdfMaterial>>
+
+    @GET("comments/{material_id}")
+    suspend fun getComments(@Path("material_id") materialId: Int): Response<List<Comment>>
+
+    @POST("comments")
+    suspend fun addComment(@Body commentRequest: CommentRequest): Response<Comment>
+
+    @PUT("comments/{id}")
+    suspend fun updateComment(
+        @Path("id") commentId: Int,
+        @Body commentRequest: CommentRequest
+    ): Response<Comment>
+
+    @DELETE("comments/{id}")
+    suspend fun deleteComment(@Path("id") commentId: Int): Response<Unit>
+
 }

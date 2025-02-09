@@ -16,7 +16,7 @@ class MaterialViewModel(private val apiService: ApiService) : ViewModel() {
     val materials: StateFlow<List<PdfMaterial>> = _materials
 
     private val _Mymaterials = MutableStateFlow<List<PdfMaterial>>(emptyList())
-    val Mymaterials: StateFlow<List<PdfMaterial>> = _materials
+    val Mymaterials: StateFlow<List<PdfMaterial>> = _Mymaterials
 
     private val _selectedMaterial = MutableStateFlow<PdfMaterial?>(null)
     val selectedMaterial: StateFlow<PdfMaterial?> = _selectedMaterial

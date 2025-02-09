@@ -6,7 +6,6 @@ import com.gelsoncosta.gacademics.data.api.ApiService
 import com.gelsoncosta.gacademics.data.api.TokenManager
 import com.gelsoncosta.gacademics.data.models.AuthResponse
 import com.gelsoncosta.gacademics.data.models.User
-import com.gelsoncosta.gacademics.helpers.DataStoreHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -37,9 +36,10 @@ class UserViewModel(
         viewModelScope.launch {
             try {
                 val token = dataStoreHelper.getToken() ?: null
+                val user = dataStoreHelper.getUser() ?: null
                 if (token != null) {
                     _authToken.value = token
-
+                    _user.value = user
                 }
             }catch (e : Exception)
             {
@@ -113,7 +113,10 @@ class UserViewModel(
         if (response.isSuccessful) {
             response.body()?.let { authResponse ->
                 _authToken.value = authResponse.token
+                _user.value = authResponse.user
                 dataStoreHelper.saveToken(authResponse.token)
+                dataStoreHelper.saveUser(authResponse.user)
+
             }
         } else {
             _errorMessage.value = "Falha na autenticação"
@@ -123,6 +126,7 @@ class UserViewModel(
     fun logout() {
         viewModelScope.launch {
             dataStoreHelper.clearToken()
+            dataStoreHelper.clearUser()
             _user.value = null
             _authToken.value = null
         }

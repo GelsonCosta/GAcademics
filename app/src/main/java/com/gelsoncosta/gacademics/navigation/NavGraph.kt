@@ -2,6 +2,8 @@ package com.gelsoncosta.gacademics.navigation
 
 
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -30,6 +32,7 @@ sealed class Screen(val route: String) {
     object FavoriteList : Screen("favorites")
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun NavGraph(
@@ -149,6 +152,7 @@ fun NavGraph(
         composable(Screen.Home.route) {
             MaterialListScreen(
                 viewModel = materialViewModel,
+                userViewModel = userViewModel,
                 onNavigateToDetail = { materialId ->
                     navController.navigate(Screen.MaterialDetail.createRoute(materialId))
                 }
@@ -182,6 +186,8 @@ fun NavGraph(
             val materialId = backStackEntry.arguments?.getInt("materialId") ?: return@composable
             MaterialDetailsScreen(
                 viewModel = materialViewModel,
+                userViewModel = userViewModel,
+                commentViewModel = commentViewModel,
                 materialId = materialId,
                 onNavigateBack = {
                     navController.popBackStack()

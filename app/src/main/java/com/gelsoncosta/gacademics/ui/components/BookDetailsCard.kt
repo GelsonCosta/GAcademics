@@ -134,7 +134,7 @@ fun PdfMaterialDetailsCard(
                 )
 
                 Text(
-                    text = "${pdfMaterial.description.take(150)}...",
+                    text = pdfMaterial.description,
                     style = MaterialTheme.typography.bodyLarge,
                     color = TextGray,
                     lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2
@@ -161,6 +161,7 @@ fun PdfMaterialDetailsCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = "Ler", style = MaterialTheme.typography.titleMedium)
                 }
+
             }
         }
     }
