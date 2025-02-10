@@ -54,7 +54,7 @@ fun CommentSection(
             .padding(horizontal = 20.dp)
     ) {
         Text(
-            text = "Comments (${comments.size})",
+            text = "Commentários (${comments.size})",
             style = MaterialTheme.typography.titleLarge,
             color = TextWhite,
             modifier = Modifier.padding(vertical = 16.dp)
@@ -165,7 +165,7 @@ private fun CommentInput(
                     unfocusedTextColor = TextWhite
                 ),
                 placeholder = {
-                    Text("Write a comment...", color = TextGray)
+                    Text("Escreva um comentário", color = TextGray)
                 },
                 maxLines = 3
             )

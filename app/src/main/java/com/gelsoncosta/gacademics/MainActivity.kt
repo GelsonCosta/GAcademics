@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 object SigleConstVariables {
-    const val BASE_URL: String =  "https://lemur-communal-grossly.ngrok-free.app" //"http://192.168.8.120:3000"
+    const val BASE_URL: String =  "http://192.168.98.206:3000"
 
     public val academicCategories = listOf(
         "Matemática",
