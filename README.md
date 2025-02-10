@@ -11,7 +11,7 @@ O aplicativo foi desenvolvido utilizando Kotlin e Jetpack Compose para a interfa
 ### Telas Principais
 
 #### SplashScreen
-- Exibe uma tela inicial de boas-vindas com o logo do aplicativo.
+- Exibe o nome do aplicativo (GAcademics) com o logo do aplicativo.
 - Redireciona para a tela de login ou para a tela principal (HomeScreen) se o usuário já estiver autenticado.
 
 #### LoginScreen
