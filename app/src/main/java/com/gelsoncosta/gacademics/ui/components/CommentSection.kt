@@ -100,7 +100,7 @@ fun CommentSection(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No comments yet. Be the first to comment!",
+                    text = "Sem comentários ainda. Seja o primeiro!",
                     color = TextGray,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -274,7 +274,7 @@ private fun CommentItem(
                             editedContent = comment.content
                         }
                     ) {
-                        Text("Cancel", color = TextGray)
+                        Text("Cancelar", color = TextGray)
                     }
                     TextButton(
                         onClick = {
@@ -284,7 +284,7 @@ private fun CommentItem(
                             isEditing = false
                         }
                     ) {
-                        Text("Save", color = AccentColor)
+                        Text("Salvar", color = AccentColor)
                     }
                 }
             } else {
@@ -307,7 +307,7 @@ private fun CommentItem(
                         ) {
                             Icon(
                                 Icons.Default.Edit,
-                                contentDescription = "Edit",
+                                contentDescription = "Editar",
                                 tint = TextGray
                             )
                         }

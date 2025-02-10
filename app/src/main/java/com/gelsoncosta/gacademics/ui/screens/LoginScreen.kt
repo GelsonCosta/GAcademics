@@ -61,7 +61,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Welcome Back",
+                text = "Bem vindo(a) de volta!",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextWhite,
@@ -69,7 +69,7 @@ fun LoginScreen(
             )
 
             Text(
-                text = "Sign in to continue",
+                text = "Inicie sessão para continuar...",
                 fontSize = 16.sp,
                 color = TextGray,
                 modifier = Modifier.padding(bottom = 32.dp)
@@ -191,7 +191,7 @@ fun LoginScreen(
                     )
                 } else {
                     Text(
-                        "Sign In",
+                        "Entrar",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -221,7 +221,7 @@ fun LoginScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Welcome back!",
+                            "Bem vindo(a) de volta",
                             color = SuccessGreen
                         )
                     }
@@ -235,7 +235,7 @@ fun LoginScreen(
                     contentColor = AccentColor
                 )
             ) {
-                Text("Don't have an account? Sign up")
+                Text("Não tem uma conta? crie uma!")
             }
         }
     }

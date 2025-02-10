@@ -1,5 +1,6 @@
 package com.gelsoncosta.gacademics.ui.components
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -46,6 +47,7 @@ private val AccentColor = Color(0xFF6B8AFE)
 private val TextWhite = Color(0xFFEEEEEE)
 private val TextGray = Color(0xFFB0B0B0)
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun PdfMaterialDetailsCard(
     pdfMaterial: PdfMaterial,

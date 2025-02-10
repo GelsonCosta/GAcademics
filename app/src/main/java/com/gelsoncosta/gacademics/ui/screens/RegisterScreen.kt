@@ -1,6 +1,5 @@
 package com.gelsoncosta.gacademics.ui.screens
 
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -34,6 +33,11 @@ private val TextGray = Color(0xFFB0B0B0)
 private val ErrorRed = Color(0xFFFF6B6B)
 private val SuccessGreen = Color(0xFF4CAF50)
 
+data class ValidationState(
+    val isValid: Boolean,
+    val errorMessage: String? = null
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
@@ -48,6 +52,42 @@ fun RegisterScreen(
     var isLoading by remember { mutableStateOf(false) }
     var showSuccessMessage by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    
+    // Validation states
+    var nameValidation by remember { mutableStateOf(ValidationState(true)) }
+    var emailValidation by remember { mutableStateOf(ValidationState(true)) }
+    var passwordValidation by remember { mutableStateOf(ValidationState(true)) }
+
+    // Validation functions
+    fun validateName(input: String): ValidationState {
+        return when {
+            input.isBlank() -> ValidationState(false, "Nome é obrigatório")
+            input.length < 3 -> ValidationState(false, "Nome deve ter pelo menos 3 caracteres")
+            else -> ValidationState(true)
+        }
+    }
+
+    fun validateEmail(input: String): ValidationState {
+        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$"
+        return when {
+            input.isBlank() -> ValidationState(false, "Email é obrigatório")
+            !input.matches(emailRegex.toRegex()) -> ValidationState(false, "Email inválido")
+            else -> ValidationState(true)
+        }
+    }
+
+    fun validatePassword(input: String): ValidationState {
+        return when {
+            input.isBlank() -> ValidationState(false, "Senha é obrigatória")
+            input.length < 8 -> ValidationState(false, "Senha deve ter pelo menos 8 caracteres")
+            !input.any { it.isDigit() } -> ValidationState(false, "Senha deve conter pelo menos um número")
+            !input.any { it.isUpperCase() } -> ValidationState(false, "Senha deve conter pelo menos uma letra maiúscula")
+            !input.any { it.isLowerCase() } -> ValidationState(false, "Senha deve conter pelo menos uma letra minúscula")
+            !input.any { it in "!@#$%^&*()_+-=[]{}|;:,.<>?".toCharArray() } -> 
+                ValidationState(false, "Senha deve conter pelo menos um caractere especial")
+            else -> ValidationState(true)
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -62,7 +102,7 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Create Account",
+                text = "Criar Conta",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextWhite,
@@ -70,7 +110,7 @@ fun RegisterScreen(
             )
 
             Text(
-                text = "Join our academic community",
+                text = "Junte-se à nossa comunidade acadêmica.",
                 fontSize = 16.sp,
                 color = TextGray,
                 modifier = Modifier.padding(bottom = 32.dp)
@@ -78,13 +118,22 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = name,
-                onValueChange = { name = it },
-                label = { Text("Full Name", color = TextGray) },
+                onValueChange = { 
+                    name = it
+                    nameValidation = validateName(it)
+                },
+                isError = !nameValidation.isValid,
+                label = { Text("Nome Completo", color = TextGray) },
+                supportingText = {
+                    if (!nameValidation.isValid) {
+                        Text(nameValidation.errorMessage ?: "", color = ErrorRed)
+                    }
+                },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Name",
-                        tint = AccentColor
+                        tint = if (!nameValidation.isValid) ErrorRed else AccentColor
                     )
                 },
                 modifier = Modifier
@@ -96,20 +145,30 @@ fun RegisterScreen(
                     unfocusedBorderColor = TextGray.copy(alpha = 0.5f),
                     focusedTextColor = TextWhite,
                     unfocusedTextColor = TextWhite,
-                    cursorColor = AccentColor
+                    cursorColor = AccentColor,
+                    errorBorderColor = ErrorRed
                 ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { 
+                    email = it
+                    emailValidation = validateEmail(it)
+                },
+                isError = !emailValidation.isValid,
                 label = { Text("Email", color = TextGray) },
+                supportingText = {
+                    if (!emailValidation.isValid) {
+                        Text(emailValidation.errorMessage ?: "", color = ErrorRed)
+                    }
+                },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Email,
                         contentDescription = "Email",
-                        tint = AccentColor
+                        tint = if (!emailValidation.isValid) ErrorRed else AccentColor
                     )
                 },
                 modifier = Modifier
@@ -121,7 +180,8 @@ fun RegisterScreen(
                     unfocusedBorderColor = TextGray.copy(alpha = 0.5f),
                     focusedTextColor = TextWhite,
                     unfocusedTextColor = TextWhite,
-                    cursorColor = AccentColor
+                    cursorColor = AccentColor,
+                    errorBorderColor = ErrorRed
                 ),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
@@ -131,13 +191,22 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = { 
+                    password = it
+                    passwordValidation = validatePassword(it)
+                },
+                isError = !passwordValidation.isValid,
                 label = { Text("Password", color = TextGray) },
+                supportingText = {
+                    if (!passwordValidation.isValid) {
+                        Text(passwordValidation.errorMessage ?: "", color = ErrorRed)
+                    }
+                },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = "Password",
-                        tint = AccentColor
+                        tint = if (!passwordValidation.isValid) ErrorRed else AccentColor
                     )
                 },
                 trailingIcon = {
@@ -147,7 +216,7 @@ fun RegisterScreen(
                             else Icons.Default.VisibilityOff,
                             contentDescription = if (passwordVisible) "Hide password"
                             else "Show password",
-                            tint = AccentColor
+                            tint = if (!passwordValidation.isValid) ErrorRed else AccentColor
                         )
                     }
                 },
@@ -162,7 +231,8 @@ fun RegisterScreen(
                     unfocusedBorderColor = TextGray.copy(alpha = 0.5f),
                     focusedTextColor = TextWhite,
                     unfocusedTextColor = TextWhite,
-                    cursorColor = AccentColor
+                    cursorColor = AccentColor,
+                    errorBorderColor = ErrorRed
                 ),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -180,25 +250,32 @@ fun RegisterScreen(
 
             Button(
                 onClick = {
-                    isLoading = true
-                    errorMessage = null
-                    viewModel.register(
-                        name = name,
-                        email = email,
-                        password = password,
-                        onSuccess = {
-                            isLoading = false
-                            showSuccessMessage = true
-                            viewModel.viewModelScope.launch {
-                                delay(1500)
-                                onNavigateToHome()
+                    // Validate all fields before submission
+                    nameValidation = validateName(name)
+                    emailValidation = validateEmail(email)
+                    passwordValidation = validatePassword(password)
+                    
+                    if (nameValidation.isValid && emailValidation.isValid && passwordValidation.isValid) {
+                        isLoading = true
+                        errorMessage = null
+                        viewModel.register(
+                            name = name,
+                            email = email,
+                            password = password,
+                            onSuccess = {
+                                isLoading = false
+                                showSuccessMessage = true
+                                viewModel.viewModelScope.launch {
+                                    delay(1500)
+                                    onNavigateToHome()
+                                }
+                            },
+                            onError = { error ->
+                                isLoading = false
+                                errorMessage = error
                             }
-                        },
-                        onError = { error ->
-                            isLoading = false
-                            errorMessage = error
-                        }
-                    )
+                        )
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -219,7 +296,7 @@ fun RegisterScreen(
                     )
                 } else {
                     Text(
-                        "Create Account",
+                        "Criar Conta",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -249,7 +326,7 @@ fun RegisterScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Welcome to the Academic Community!",
+                            "Bem vindo à nossa comunidade acadêmica!",
                             color = SuccessGreen
                         )
                     }
@@ -263,7 +340,7 @@ fun RegisterScreen(
                     contentColor = AccentColor
                 )
             ) {
-                Text("Already have an account? Sign in")
+                Text("Já tem uma conta? Clique aquí!")
             }
         }
     }

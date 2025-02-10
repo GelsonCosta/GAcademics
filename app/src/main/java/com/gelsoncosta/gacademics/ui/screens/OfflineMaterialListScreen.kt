@@ -195,7 +195,7 @@ fun OfflineMaterialListScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp),
-                                placeholder = { Text("Search materials", color = TextGray) },
+                                placeholder = { Text("Pesquisar Material", color = TextGray) },
                                 leadingIcon = {
                                     Icon(
                                         Icons.Default.Search,
@@ -362,7 +362,7 @@ private fun EmptyState(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "No materials available",
+            text = "Sem material disponível",
             style = MaterialTheme.typography.titleMedium,
             color = TextWhite
         )
@@ -376,7 +376,7 @@ private fun EmptyState(
                 contentColor = TextWhite
             )
         ) {
-            Text("Refresh")
+            Text("Recarregar")
         }
     }
 }

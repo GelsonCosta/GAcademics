@@ -195,7 +195,7 @@ fun MaterialListScreen(
                                 .background(DarkBackground)
                         ) {
                             Text(
-                                text = "Explore thousands of\nbooks on the go",
+                                text = "Milhares de recursos \nacademicos ao seu alcance",
                                 style = MaterialTheme.typography.headlineMedium,
                                 textAlign = TextAlign.Start,
                                 color = TextWhite,
@@ -397,7 +397,7 @@ private fun ErrorState(
                 contentColor = TextWhite
             )
         ) {
-            Text("Retry")
+            Text("Tentar Novamente")
         }
     }
 }
@@ -414,7 +414,7 @@ private fun EmptyState(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "No materials available",
+            text = "Sem material disponível",
             style = MaterialTheme.typography.titleMedium,
             color = TextWhite
         )
@@ -428,7 +428,7 @@ private fun EmptyState(
                 contentColor = TextWhite
             )
         ) {
-            Text("Refresh")
+            Text("Recarregar")
         }
     }
 }
