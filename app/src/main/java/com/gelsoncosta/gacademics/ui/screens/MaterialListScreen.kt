@@ -149,10 +149,10 @@ fun MaterialListScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { viewModel.fetchMaterials() }) {
+                        IconButton(onClick = {AppNavigator.navigateToSearch()}) {
                             Icon(
-                                Icons.Default.Refresh,
-                                contentDescription = "Refresh",
+                                Icons.Default.Search,
+                                contentDescription = "Search",
                                 tint = TextWhite
                             )
                         }

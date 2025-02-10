@@ -92,6 +92,15 @@ interface ApiService {
         @Body commentRequest: CommentRequest
     ): Response<Comment>
 
+    @GET("materials/search")
+    suspend fun searchMaterials(@Query("query") searchQuery: String): Response<List<PdfMaterial>>
+
+    @GET("materials/category/{category}")
+    suspend fun getMaterialsByCategory(@Path("category") category: String): Response<List<PdfMaterial>>
+
+    @GET("materials/tag/{tag}")
+    suspend fun getMaterialsByTag(@Path("tag") tag: String): Response<List<PdfMaterial>>
+
     @DELETE("comments/{id}")
     suspend fun deleteComment(@Path("id") commentId: Int): Response<Unit>
 

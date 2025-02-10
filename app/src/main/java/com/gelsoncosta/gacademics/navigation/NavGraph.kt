@@ -19,6 +19,7 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
     object Home : Screen("home")
+    object Search:Screen("search")
     object MyMaterialList: Screen("mymaterials")
     object  Downloads: Screen("downloads")
     object UploadMaterialScreen: Screen("uploadMaterial")
@@ -157,24 +158,20 @@ fun NavGraph(
             )
         }
 
-        composable(Screen.Home.route) {
-            HomeScreen(
-                onNavigateToMaterialList = {
-                    navController.navigate(Screen.Home.route)
-                },
-                onLogout = {
-                    userViewModel.logout()
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.Home.route) { inclusive = true }
-                    }
-                }
-            )
-        }
 
         composable(Screen.Home.route) {
             MaterialListScreen(
                 viewModel = materialViewModel,
                 userViewModel = userViewModel,
+                onNavigateToDetail = { materialId ->
+                    navController.navigate(Screen.MaterialDetail.createRoute(materialId))
+                }
+            )
+        }
+        composable(Screen.Search.route) {
+            SearchScreen (
+                viewModel = materialViewModel,
+                //userViewModel = userViewModel,
                 onNavigateToDetail = { materialId ->
                     navController.navigate(Screen.MaterialDetail.createRoute(materialId))
                 }
@@ -268,7 +265,13 @@ object AppNavigator {
     fun navigateToOfflinePdfReader(id:Int){
         navController?.navigate(Screen.OfflinepdfReader.createRoute(id))
     }
+    fun navigateToSearch(){
+        navController?.navigate(Screen.Search.route)
+    }
 
+    fun navigatePopBack(){
+        navController?.popBackStack()
+    }
 
 
     fun onSignOut() {

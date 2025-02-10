@@ -13,6 +13,15 @@ import okhttp3.RequestBody
 
 class MaterialViewModel(private val apiService: ApiService, private val pdfMaterialDao: PdfMaterialDao) : ViewModel() {
 
+    private val _searchResults = MutableStateFlow<List<PdfMaterial>>(emptyList())
+    val searchResults: StateFlow<List<PdfMaterial>> = _searchResults
+
+    private val _categoryResults = MutableStateFlow<List<PdfMaterial>>(emptyList())
+    val categoryResults: StateFlow<List<PdfMaterial>> = _categoryResults
+
+    private val _tagResults = MutableStateFlow<List<PdfMaterial>>(emptyList())
+    val tagResults: StateFlow<List<PdfMaterial>> = _tagResults
+
     private val _materials = MutableStateFlow<List<PdfMaterial>>(emptyList())
     val materials: StateFlow<List<PdfMaterial>> = _materials
 
@@ -216,6 +225,69 @@ class MaterialViewModel(private val apiService: ApiService, private val pdfMater
                 _isLoading.value = false
             }
         }
+    }
+    fun searchMaterials(query: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = apiService.searchMaterials(query)
+                if (response.isSuccessful) {
+                    _searchResults.value = response.body() ?: emptyList()
+                    _errorMessage.value = null
+                } else {
+                    _errorMessage.value = "Erro ao buscar materiais"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Erro: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun searchMaterialsByCategory(category: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = apiService.getMaterialsByCategory(category)
+                if (response.isSuccessful) {
+                    _categoryResults.value = response.body() ?: emptyList()
+                    _errorMessage.value = null
+                } else {
+                    _errorMessage.value = "Erro ao buscar materiais por categoria"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Erro: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun searchMaterialsByTag(tag: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = apiService.getMaterialsByTag(tag)
+                if (response.isSuccessful) {
+                    _tagResults.value = response.body() ?: emptyList()
+                    _errorMessage.value = null
+                } else {
+                    _errorMessage.value = "Erro ao buscar materiais por tag"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Erro: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // Function to clear search results
+    fun clearSearchResults() {
+        _searchResults.value = emptyList()
+        _categoryResults.value = emptyList()
+        _tagResults.value = emptyList()
     }
 
     // Pdfs Offlines
