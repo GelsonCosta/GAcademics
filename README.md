@@ -1,6 +1,6 @@
 # Título e Tema do Projeto
 
-## Título: "GAcademics: Plataforma de Compartilhamento de Materiais Acadêmicos"
+## Título: "GAcademics: Plataforma de Compartilhamento de Materiais Acadêmicos Em PDF"
 
 ## Resumo
 O GAcademics é uma plataforma que permite aos usuários compartilhar e acessar materiais acadêmicos em formato PDF. O aplicativo oferece funcionalidades como upload de materiais, busca por categoria, tags, favoritos e comentários. A interface do usuário foi desenvolvida com Jetpack Compose, e os dados são gerenciados por uma API REST que realiza operações CRUD (Create, Read, Update, Delete). O aplicativo também utiliza Room Database para armazenamento local de materiais offline.
